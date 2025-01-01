@@ -6,7 +6,7 @@ import random
 app = Flask(__name__)
 
 # Initialize the Google Maps client
-gmaps = googlemaps.Client(key="AIzaSyAor-UWodEb69l9NYsL5-O3ODsF-TLXDlg")
+gmaps = googlemaps.Client(key="")
 
 '''@app.route('/location', methods=['POST'])
 def get_places():
@@ -95,29 +95,39 @@ def search():
                     'address': p.get('vicinity'),
                     'lat': p['geometry']['location']['lat'],
                     'lng': p['geometry']['location']['lng'],
+                    'place_id': p['place_id']
                 }
                 for p in combined_results#.get('results', [])
             ]
+    
+    print(places)
             
     directions = []
+    random_waypoints = []
+
+    print(place[0]['place_id'])
 
     for i in range(0,10):
         if len(places) > 3:
-            random_waypoints = random.sample(places, 3)
+            random_samples = random.sample(places, 3)
+            random_waypoints = ['place_id:' + p['place_id'] for p in random_samples]
         else:
             # Use all places if there are fewer than 3
-            random_waypoints = places
+            random_samples = places
+            random_waypoints = ['place_id:' + p['place_id'] for p in random_samples]
 
         for waypoint in random_waypoints:
-            print(f"Waypoint Name: {waypoint['name']}, Lat: {waypoint['lat']}, Lng: {waypoint['lng']}")
+            print(f"Waypoint: {waypoint}")
 
-        directions[i] = gmaps.directions(
-            origin=place['place_id'],
-            destination=place['place_id'],
+        directions.append(gmaps.directions(
+            origin='place_id:' + place[0]['place_id'],
+            destination='place_id:' + place[0]['place_id'],
             waypoints=random_waypoints,  # Add POIs as waypoints
             mode="walking",  # Or "bicycling" for faster routes
             optimize_waypoints=True
-        )
+        ))
+
+    print(directions[0])
 
     #print(places)
     return render_template('results.html', places=places, query=search_query, lat=place_lat, lng=place_lng)
