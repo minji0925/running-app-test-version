@@ -1,4 +1,4 @@
-import json
+import json, requests
 from flask import Flask, jsonify, request, render_template
 import googlemaps
 import random
@@ -50,9 +50,15 @@ def search():
     #results = gmaps.places(query = search_query)
     place = gmaps.geocode(search_query) #language='ko'
     print(place)
+    print('\n\n\n')
     place_lat = place[0]['geometry']['location']['lat']
     place_lng = place[0]['geometry']['location']['lng']
 
+    weather_url = 'https://api.openweathermap.org/data/2.5/weather?lat={place_lat}&lon={place_lng}&APPID={1840e8b185e853cff41a492988daafc4}'
+    weather_data = requests.get(weather_url).json()
+
+    print(weather_data)
+    print('\n\n\n')
     '''places = [
                 {
                     'name': place.get('name'),
@@ -105,8 +111,6 @@ def search():
     directions = []
     random_waypoints = []
 
-    print(place[0]['place_id'])
-
     for i in range(0,10):
         if len(places) > 3:
             random_samples = random.sample(places, 3)
@@ -116,8 +120,8 @@ def search():
             random_samples = places
             random_waypoints = ['place_id:' + p['place_id'] for p in random_samples]
 
-        for waypoint in random_waypoints:
-            print(f"Waypoint: {waypoint}")
+        '''for waypoint in random_waypoints:
+            print(f"Waypoint: {waypoint}")'''
 
         directions.append(gmaps.directions(
             origin='place_id:' + place[0]['place_id'],
@@ -127,7 +131,37 @@ def search():
             optimize_waypoints=True
         ))
 
-    print(directions[0])
+    #print(directions[0])
+    #print(random_waypoints)
+
+    response = gmaps.directions(
+        origin='place_id:ChIJA_ClgTSkfDURMVF9TcMKCOg',
+        destination='place_id:ChIJEaGUTSKkfDURrXN-knNmA2Y',
+        waypoints=['place_id:ChIJK_b0UX2jfDURmkYPvmWYm90'],
+        mode="walking",
+        optimize_waypoints=True
+    )
+    print(response)
+
+    print('\n\nhello world')
+
+
+    try:
+        response = gmaps.directions(
+            origin='37.49391831970851,127.0625864197085',
+            destination='37.4952673,127.0639354',
+            mode="walking",
+            optimize_waypoints=True
+        )
+        print(response)
+    except Exception as e:
+        print(f"Error: {e}")
+
+    print('\n\nabc')
+    place_details = gmaps.place(place_id='ChIJNaoEOCukfDURd3wWss7E6xo')
+    place_details2 = gmaps.place(place_id='ChIJEaGUTSKkfDURrXN-knNmA2Y')
+    print(place_details)
+    print(place_details2)
 
     #print(places)
     return render_template('results.html', places=places, query=search_query, lat=place_lat, lng=place_lng)
